@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Bouncing Stars</title>
+  <style>
+    body {
+      margin: 0;
+      overflow: hidden;
+    }
+    canvas {
+      display: block;
+      background-color: #000;
+    }
+  </style>
+</head>
+<body>
+  <canvas id="canvas"></canvas>
+  <script>
+    const canvas = document.getElementById('canvas');
+    const ctx = canvas.getContext('2d');
+
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+
+    // Star object constructor
+    function Star(x, y, dx, dy, size, color1, color2) {
+      this.x = x;
+      this.y = y;
+      this.dx = dx;
+      this.dy = dy;
+      this.size = size;
+      this.growing = true;
+      this.color1 = color1;
+      this.color2 = color2;
+
+      this.draw = function() {
+        ctx.save();
+        ctx.translate(this.x, this.y);
+        ctx.beginPath();
+        for (let i = 0; i < 5; i++) {
+          ctx.lineTo(
+            Math.cos((Math.PI * 2 * i) / 5 - Math.PI / 2) * this.size,
+            Math.sin((Math.PI * 2 * i) / 5 - Math.PI / 2) * this.size
+          );
+          ctx.lineTo(
+            Math.cos((Math.PI * 2 * i + Math.PI) / 5 - Math.PI / 2) * this.size * 0.5,
+            Math.sin((Math.PI * 2 * i + Math.PI) / 5 - Math.PI / 2) * this.size * 0.5
+          );
+        }
+        ctx.closePath();
+        let gradient = ctx.createRadialGradient(0, 0, this.size * 0.1, 0, 0, this.size);
+        gradient.addColorStop(0, this.color1);
+        gradient.addColorStop(1, this.color2);
+        ctx.fillStyle = gradient;
+        ctx.fill();
+        ctx.restore();
+      };
+
+      this.update = function() {
+        if (this.x + this.size > canvas.width || this.x - this.size < 0) this.dx = -this.dx;
+        if (this.y + this.size > canvas.height || this.y - this.size < 0) this.dy = -this.dy;
+        this.x += this.dx;
+        this.y += this.dy;
+
+        if (this.growing) {
+          this.size += 0.5;
+          if (this.size > 40) this.growing = false;
+        } else {
+          this.size -= 0.5;
+          if (this.size < 15) this.growing = true;
+        }
+
+        this.draw();
+      };
+    }
+
+    // Create 3 bouncing stars
+    let stars = [
+      new Star(100, 100, 3, 2, 20, 'yellow', 'purple'),
+      new Star(200, 300, 2, 3, 25, 'yellow', 'purple'),
+      new Star(400, 200, 4, 2, 30, 'yellow', 'purple')
+    ];
+
+    function animate() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      for (let star of stars) {
+        star.update();
+      }
+      requestAnimationFrame(animate);
+    }
+
+    animate();
+  </script>
+</body>
+</html>
